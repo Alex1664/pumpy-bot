@@ -151,7 +151,8 @@ def startTrading(coin):
 
 
 def waitForUser():
-    print('Enter the coin to trade ...')
+    coin=input('Enter the coin to trade ...')
+    startTrading(coin)
 
 
 def waitForTweet():
@@ -176,6 +177,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "hm:", ["mode="])
     except getopt.GetoptError:
+        print('error')
         help()
         sys.exit(2)
     for opt, arg in opts:
@@ -183,14 +185,14 @@ def main(argv):
             help()
             sys.exit()
         elif opt in ("-m", "--mode"):
-            if mode not in ('wait', 'tweet'):
+            mode = arg
+            if mode not in ('user', 'tweet'):
                 help()
                 sys.exit(2)
-            mode = arg
 
     print("Launching bot ...")
 
-    if mode == 'wait':
+    if mode == 'user':
         waitForUser()
     elif mode == 'tweet':
         waitForTweet()
