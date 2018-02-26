@@ -5,12 +5,14 @@ import getopt
 import os
 import sys
 import time
+
 import tweepy
 from binance.client import Client
 
 """*******************"""
 """ Authentifications """
 """*******************"""
+
 
 def authenticationTweeter():
     print("Connection to tweeter ...")
@@ -19,9 +21,11 @@ def authenticationTweeter():
     auth.set_access_token(os.environ['TWEETER_ACCESS_TOKEN'], os.environ['TWEETER_ACCESS_TOKEN_SECRET'])
     return tweepy.API(auth)
 
+
 def authenticationBinance():
     print("Connection to binance ...")
     return Client(os.environ['BINANCE_API_KEY'], os.environ['BINANCE_API_SECRET'])
+
 
 def authenticationCryptopia():
     print("Connection to cryptopia ...")
@@ -31,6 +35,7 @@ def authenticationCryptopia():
 """*********"""
 """ Binance """
 """*********"""
+
 
 def handleOrdersBinance(coin, coinFrom):
     # Récupération du temps de départ
@@ -141,13 +146,51 @@ def handleOrdersBinance(coin, coinFrom):
 """ Cryptopia """
 """***********"""
 
-def handleOrdersCryptopia(coin, coinFrom):
-    print 0
+
+def handleOrders(coin, coinFrom, client):
+    # Récupération du temps de départ
+    originalTime = time.time()
+
+    # Récupération des fonds disponibles
+    originalAssetETH = client.get_balance(coinFrom)
+    print(str(originalAssetETH) + " " + coinFrom + " available")
+
+    # Récupération du prix de départ
+    originalPrice = client.get_price(coin, coinFrom)
+    print(coin + " is at " + str(originalPrice) + " " + coinFrom)
+
+    # Calcul de la quantité à acheter
+    quantity = float(originalAssetETH / originalPrice)
+    print("Can buy " + str(quantity) + " " + coin)
+    quantity = int(quantity)
+    print("Will buy " + str(quantity) + " " + coin + " (rounded)")
+
+    # Placement ordre achat
+    client.buy_market(coin, coinFrom, quantity, testMode)
+    print("--> Bought " + str(quantity) + " " + coin)
+
+    # Wait 15 secondes
+    while ((time.time() - originalTime) < 15):
+        newPrice = client.get_price(coin, coinFrom)
+        print(coin + " is at " + str(newPrice) + coinFrom)
+        time.sleep(0.5)
+
+    # Placement ordre vente
+    client.sell_market(coin, coinFrom, quantity, testMode)
+
+    # Status order sell
+    finalAssetETHJson = clientBinance.get_asset_balance(coinFrom)
+    finalAssetETH = client.get_balance(coinFrom)
+    print(str(originalAssetETH) + " " + coinFrom + " available")
+    print("--> Sold " + str(quantity) + " " + coin)
+    print("Previously had " + str(originalAssetETH) + " " + coinFrom + ", now have " + str(finalAssetETH) + " " + coinFrom)
+    print("Delta is " + str(finalAssetETH - originalAssetETH) + " " + coinFrom)
 
 
 """*********"""
 """ Tweeter """
 """*********"""
+
 
 def searchCoinOfTheWeek(tweet):
     print("Searching coin ...")
@@ -176,6 +219,7 @@ def searchCoinOfTheWeek(tweet):
 """ Tweeter stream """
 """****************"""
 
+
 class TwitterStreamListener(tweepy.StreamListener):
 
     def on_status(self, status):
@@ -202,6 +246,7 @@ def handle_tweet(tweet):
 """ Utils """
 """*******"""
 
+
 def startTrading(coin, plateforme):
     coinFrom = 'ETH'
 
@@ -217,12 +262,14 @@ def startTrading(coin, plateforme):
 
 
 def waitForUserCryptopia():
-        coin = raw_input("Enter the coin to trade ...\n")
-        startTrading(coin, 'cryptopia')
+    coin = raw_input("Enter the coin to trade ...\n")
+    startTrading(coin, 'cryptopia')
+
 
 def waitForUserBinance():
     coin = raw_input("Enter the coin to trade ...\n")
     startTrading(coin, 'cryptopia')
+
 
 def waitForTweet():
     alexTweeterId = os.environ['TWEETER_FOLLOW_ID']
@@ -237,9 +284,11 @@ def waitForTweet():
 def help():
     print('macafee_bot.py -m <user|tweet> [--test]')
 
+
 """******"""
 """ Main """
 """******"""
+
 
 def main(argv):
     mode = ''
