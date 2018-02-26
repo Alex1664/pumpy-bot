@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""#Import"""
 import getopt
 import os
 import sys
 import time
-
 import tweepy
 from binance.client import Client
 
-"""# Authentifications"""
-
+"""*******************"""
+""" Authentifications """
+"""*******************"""
 
 def authenticationTweeter():
     print("Connection to tweeter ...")
@@ -20,16 +19,20 @@ def authenticationTweeter():
     auth.set_access_token(os.environ['TWEETER_ACCESS_TOKEN'], os.environ['TWEETER_ACCESS_TOKEN_SECRET'])
     return tweepy.API(auth)
 
-
 def authenticationBinance():
     print("Connection to binance ...")
     return Client(os.environ['BINANCE_API_KEY'], os.environ['BINANCE_API_SECRET'])
 
+def authenticationCryptopia():
+    print("Connection to cryptopia ...")
+    return Client(os.environ['CRYPTOPIA_API_KEY'], os.environ['CRYPTOPIA_API_SECRET'])
 
-"""# Binance"""
 
+"""*********"""
+""" Binance """
+"""*********"""
 
-def handle_orders(coin, coinFrom):
+def handleOrdersBinance(coin, coinFrom):
     # Récupération du temps de départ
     originalTime = time.time()
 
@@ -129,11 +132,22 @@ def handle_orders(coin, coinFrom):
     finalAssetETH = float(finalAssetETHJson['free'])
     print(str(originalAssetETH) + " " + coinFrom + " available")
     print("--> Sold " + str(quantity) + " " + coin)
-    print("Previously had " + str(originalAssetETH) + " " + coinFrom + ", now have " + str(finalAssetETH) + " " + coinFrom)
+    print("Previously had " + str(originalAssetETH) + " " + coinFrom + ", now have " + str(
+        finalAssetETH) + " " + coinFrom)
     print("Delta is " + str(finalAssetETH - originalAssetETH) + " " + coinFrom)
 
 
-"""# Tweeter"""
+"""***********"""
+""" Cryptopia """
+"""***********"""
+
+def handleOrdersCryptopia(coin, coinFrom):
+    print 0
+
+
+"""*********"""
+""" Tweeter """
+"""*********"""
 
 def searchCoinOfTheWeek(tweet):
     print("Searching coin ...")
@@ -158,8 +172,9 @@ def searchCoinOfTheWeek(tweet):
     return coinOfTheWeek.upper()
 
 
-"""# Tweeter stream"""
-
+"""****************"""
+""" Tweeter stream """
+"""****************"""
 
 class TwitterStreamListener(tweepy.StreamListener):
 
@@ -180,10 +195,14 @@ def handle_tweet(tweet):
         return False
 
     coin = searchCoinOfTheWeek(tweet.text)
-    startTrading(coin)
+    startTrading(coin, 'cryptopia')
 
 
-def startTrading(coin):
+"""*******"""
+""" Utils """
+"""*******"""
+
+def startTrading(coin, plateforme):
     coinFrom = 'ETH'
 
     if (len(coin + coinFrom) < 4):
@@ -191,13 +210,19 @@ def startTrading(coin):
 
     print("Coin symbol : " + coin + coinFrom)
 
-    handle_orders(coin, coinFrom)
+    if plateforme == 'binance':
+        handleOrdersBinance(coin, coinFrom)
+    elif plateforme == 'cryptopia':
+        handleOrdersCryptopia(coin, coinFrom)
 
 
-def waitForUser():
+def waitForUserCryptopia():
+        coin = raw_input("Enter the coin to trade ...\n")
+        startTrading(coin, 'cryptopia')
+
+def waitForUserBinance():
     coin = raw_input("Enter the coin to trade ...\n")
-    startTrading(coin)
-
+    startTrading(coin, 'cryptopia')
 
 def waitForTweet():
     alexTweeterId = os.environ['TWEETER_FOLLOW_ID']
@@ -210,11 +235,11 @@ def waitForTweet():
 
 
 def help():
-    print 'macafee_bot.py -m <user|tweet> [--test]'
+    print('macafee_bot.py -m <user|tweet> [--test]')
 
-
-"""# Main"""
-
+"""******"""
+""" Main """
+"""******"""
 
 def main(argv):
     mode = ''
@@ -230,7 +255,7 @@ def main(argv):
             sys.exit()
         elif opt in ("-m", "--mode"):
             mode = arg
-            if mode not in ('user', 'tweet'):
+            if mode not in ('cryptopia', 'binance', 'tweet'):
                 help()
                 sys.exit(2)
         elif opt in ("-t", "--test"):
@@ -238,8 +263,10 @@ def main(argv):
 
     print("Launching bot ...")
 
-    if mode == 'user':
-        waitForUser()
+    if mode == 'binance':
+        waitForUserBinance()
+    elif mode == 'cryptopia':
+        waitForUserCryptopia()
     elif mode == 'tweet':
         waitForTweet()
     else:
