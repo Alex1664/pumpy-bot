@@ -16,7 +16,7 @@ from platforms.cryptopia import Cryptopia
 """*******************"""
 
 
-def authenticationTweeter():
+def authentication_tweeter():
     print("Connection to tweeter ...")
 
     auth = tweepy.OAuthHandler(os.environ['TWEETER_CONSUMER_KEY'], os.environ['TWEETER_CONSUMER_SECRET'])
@@ -29,7 +29,7 @@ def authenticationTweeter():
 """***********"""
 
 
-def handleOrders(coin, coinFrom):
+def handle_orders(coin, coinFrom):
     # Récupération du temps de départ
     originalTime = time.time()
 
@@ -37,22 +37,22 @@ def handleOrders(coin, coinFrom):
     coinFrom = coinFrom.upper()
 
     # Récupération des fonds disponibles
-    originalAssetETH = client.get_balance(coinFrom)
-    print(str(originalAssetETH) + " " + coinFrom + " available")
+    originalAsset = client.get_balance(coinFrom)
+    print(str(originalAsset) + " " + coinFrom + " available")
 
     # Récupération du prix de départ
     originalPrice = client.get_price(coin, coinFrom)
     print(coin + " is at " + str(originalPrice) + " " + coinFrom)
+    print("Can buy " + str(float(originalAsset / originalPrice)) + " " + coin)
 
     # Calcul de la quantité à acheter
-    quantity = float(originalAssetETH / originalPrice)
-    print("Can buy " + str(quantity) + " " + coin)
-    quantity = int(quantity)
-    print("Will buy " + str(quantity) + " " + coin + " (rounded)")
+    priceBuy = float(originalPrice * 1.02)
+    quantity = float(originalAsset / priceBuy)
+    print("Will buy " + str(quantity) + " " + coin + " (price + 2%)")
 
     # Placement ordre achat
-    client.buy_market(coin, coinFrom, quantity, testMode)
-    print("--> Bought " + str(quantity) + " " + coin)
+    client.buy_market(coin, coinFrom, priceBuy, quantity, testMode)
+    print("--> Bought")
 
     # Wait 15 secondes
     while ((time.time() - originalTime) < 15):
@@ -61,14 +61,19 @@ def handleOrders(coin, coinFrom):
         time.sleep(0.5)
 
     # Placement ordre vente
-    client.sell_market(coin, coinFrom, quantity, testMode)
+    quantityAfter = client.get_balance(coin)
+    print(str(quantityAfter) + " " + coin + " available")
+    priceSell = float(client.get_price(coin, coinFrom) * 0.98)
+    print("Will sell " + str(quantityAfter) + " " + coin + " (price - 2%)")
+    client.sell_market(coin, coinFrom, priceSell, quantityAfter, testMode)
 
     # Status order sell
-    finalAssetETH = client.get_balance(coinFrom)
-    print(str(originalAssetETH) + " " + coinFrom + " available")
-    print("--> Sold " + str(quantity) + " " + coin)
-    print("Previously had " + str(originalAssetETH) + " " + coinFrom + ", now have " + str(finalAssetETH) + " " + coinFrom)
-    print("Delta is " + str(finalAssetETH - originalAssetETH) + " " + coinFrom)
+    finalAsset = client.get_balance(coinFrom)
+    print(str(originalAsset) + " " + coinFrom + " available")
+    print("--> Sold")
+    print("Previously had " + str(originalAsset) + " " + coinFrom + ", now have " + str(finalAsset) + " " + coinFrom)
+    print("Still have " + str(client.get_balance(coin)) + " " + coin)
+    print("Delta is " + str(finalAsset - originalAsset) + " " + coinFrom)
 
 
 """*********"""
@@ -76,7 +81,7 @@ def handleOrders(coin, coinFrom):
 """*********"""
 
 
-def searchCoinOfTheWeek(tweet):
+def search_coin_of_the_week(tweet):
     print("Searching coin ...")
     coinOfTheWeek = ""
 
@@ -117,13 +122,13 @@ class TwitterStreamListener(tweepy.StreamListener):
 
 
 def handle_tweet(tweet):
-    if (tweet.author.id_str != alexTweeterId):
+    if tweet.author.id_str != alexTweeterId:
         print("Tweet not from Macafee")
         print("Get tweet from Macafee ...")
         return False
 
-    coin = searchCoinOfTheWeek(tweet.text)
-    startTrading(coin)
+    coin = search_coin_of_the_week(tweet.text)
+    start_trading(coin)
 
 
 """*******"""
@@ -131,18 +136,18 @@ def handle_tweet(tweet):
 """*******"""
 
 
-def startTrading(coin):
+def start_trading(coin):
     coinFrom = 'ETH'
-    handleOrders(coin, coinFrom)
+    handle_orders(coin, coinFrom)
 
 
-def waitForUser():
+def wait_user():
     coin = raw_input("Enter the coin to trade ...\n")
-    startTrading(coin)
+    start_trading(coin)
 
 
-def waitForTweet():
-    clientTweeter = authenticationTweeter()
+def wait_tweet():
+    clientTweeter = authentication_tweeter()
 
     print("Get tweet from Macafee ...")
 
@@ -198,9 +203,9 @@ def main(argv):
         sys.exit()
 
     if mode == 'user':
-        waitForUser()
+        wait_user()
     elif mode == 'tweet':
-        waitForTweet()
+        wait_tweet()
     else:
         help()
         sys.exit()
