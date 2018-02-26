@@ -9,6 +9,9 @@ import time
 import tweepy
 from binance.client import Client
 
+from platforms.binance import Binance
+from platforms.cryptopia import Cryptopia
+
 """*******************"""
 """ Authentifications """
 """*******************"""
@@ -147,9 +150,12 @@ def handleOrdersBinance(coin, coinFrom):
 """***********"""
 
 
-def handleOrders(coin, coinFrom, client):
+def handleOrders(coin, coinFrom):
     # Récupération du temps de départ
     originalTime = time.time()
+
+    coin = coin.upper()
+    coinFrom = coinFrom.upper()
 
     # Récupération des fonds disponibles
     originalAssetETH = client.get_balance(coinFrom)
@@ -179,7 +185,6 @@ def handleOrders(coin, coinFrom, client):
     client.sell_market(coin, coinFrom, quantity, testMode)
 
     # Status order sell
-    finalAssetETHJson = clientBinance.get_asset_balance(coinFrom)
     finalAssetETH = client.get_balance(coinFrom)
     print(str(originalAssetETH) + " " + coinFrom + " available")
     print("--> Sold " + str(quantity) + " " + coin)
@@ -212,7 +217,7 @@ def searchCoinOfTheWeek(tweet):
         print("Coin of the week not found :(")
         print("Get tweet from Macafee ...")
 
-    return coinOfTheWeek.upper()
+    return coinOfTheWeek
 
 
 """****************"""
@@ -239,7 +244,7 @@ def handle_tweet(tweet):
         return False
 
     coin = searchCoinOfTheWeek(tweet.text)
-    startTrading(coin, 'cryptopia')
+    startTrading(coin)
 
 
 """*******"""
@@ -247,42 +252,28 @@ def handle_tweet(tweet):
 """*******"""
 
 
-def startTrading(coin, plateforme):
+def startTrading(coin):
     coinFrom = 'ETH'
-
-    if (len(coin + coinFrom) < 4):
-        return False
-
-    print("Coin symbol : " + coin + coinFrom)
-
-    if plateforme == 'binance':
-        handleOrdersBinance(coin, coinFrom)
-    elif plateforme == 'cryptopia':
-        handleOrdersCryptopia(coin, coinFrom)
+    handleOrders(coin, coinFrom)
 
 
-def waitForUserCryptopia():
+def waitForUser():
     coin = raw_input("Enter the coin to trade ...\n")
-    startTrading(coin, 'cryptopia')
-
-
-def waitForUserBinance():
-    coin = raw_input("Enter the coin to trade ...\n")
-    startTrading(coin, 'cryptopia')
+    startTrading(coin)
 
 
 def waitForTweet():
-    alexTweeterId = os.environ['TWEETER_FOLLOW_ID']
+    clientTweeter = authenticationTweeter()
 
     print("Get tweet from Macafee ...")
 
     streamListener = TwitterStreamListener()
     myStream = tweepy.Stream(auth=clientTweeter.auth, listener=streamListener)
-    myStream.filter(follow=[alexTweeterId])
+    myStream.filter(follow=[os.environ['TWEETER_FOLLOW_ID']])
 
 
 def help():
-    print('macafee_bot.py -m <user|tweet> [--test]')
+    print('pumpNdump.py -m <user|tweet> -p <cryptopia|binance> [--test]')
 
 
 """******"""
@@ -293,7 +284,7 @@ def help():
 def main(argv):
     mode = ''
     try:
-        opts, args = getopt.getopt(argv, "hm:t", ["mode=", "test"])
+        opts, args = getopt.getopt(argv, "hm:tp:", ["platform=", "mode=", "test"])
     except getopt.GetoptError:
         print('error')
         help()
@@ -304,18 +295,31 @@ def main(argv):
             sys.exit()
         elif opt in ("-m", "--mode"):
             mode = arg
-            if mode not in ('cryptopia', 'binance', 'tweet'):
+            if mode not in ('user', 'tweet'):
+                help()
+                sys.exit(2)
+        elif opt in ("-p", "--platform"):
+            platform = arg
+            if platform not in ('cryptopia', 'binance'):
                 help()
                 sys.exit(2)
         elif opt in ("-t", "--test"):
+            global testMode
             testMode = True
 
     print("Launching bot ...")
 
-    if mode == 'binance':
-        waitForUserBinance()
-    elif mode == 'cryptopia':
-        waitForUserCryptopia()
+    global client
+    if platform == 'binance':
+        client = Binance()
+    elif platform == 'cryptopia':
+        client = Cryptopia()
+    else:
+        help()
+        sys.exit()
+
+    if mode == 'user':
+        waitForUser()
     elif mode == 'tweet':
         waitForTweet()
     else:
@@ -323,10 +327,9 @@ def main(argv):
         sys.exit()
 
 
+client = None
 coinSymbol = ''
 alexTweeterId = ''
-clientTweeter = authenticationTweeter()
-clientBinance = authenticationBinance()
 testMode = False
 
 if __name__ == "__main__":
