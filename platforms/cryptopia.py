@@ -7,9 +7,9 @@ from cryptopia.cryptopia_api import Api
 
 class Cryptopia(object):
 
-    def __init__(self, keyEnv, secretEnv):
+    def __init__(self):
         print("Connection to cryptopia ...")
-        self.api = Api(os.environ[keyEnv], os.environ[secretEnv])
+        self.api = Api(os.environ['CRYPTOPIA_API_KEY'], os.environ['CRYPTOPIA_API_SECRET'])
 
     def get_balance(self, coin):
         print("[Cryptopia] Get balance " + coin)

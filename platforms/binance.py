@@ -8,9 +8,9 @@ from binance.client import Client
 
 class Binance(object):
 
-    def __init__(self, keyEnv, secretEnv):
+    def __init__(self):
         print("Connection to binance ...")
-        self.client = Client(os.environ[keyEnv], os.environ[secretEnv])
+        self.client = Client(os.environ['BINANCE_API_KEY'], os.environ['BINANCE_API_SECRET'])
 
     def get_balance(self, coin):
         print("[Binance] Get balance " + coin)
