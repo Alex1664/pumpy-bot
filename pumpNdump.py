@@ -24,15 +24,7 @@ def authentication_tweeter():
     return tweepy.API(auth)
 
 
-"""***********"""
-""" Cryptopia """
-"""***********"""
-
-
 def handle_orders(coin, coinFrom):
-    # Récupération du temps de départ
-    originalTime = time.time()
-
     coin = coin.upper()
     coinFrom = coinFrom.upper()
 
@@ -54,8 +46,11 @@ def handle_orders(coin, coinFrom):
     client.buy_market(coin, coinFrom, priceBuy, quantity, testMode)
     print("--> Bought")
 
+    # Time before trade
+    timeBeforeTrade = time.time()
+
     # Wait 15 secondes
-    while ((time.time() - originalTime) < 15):
+    while ((time.time() - timeBeforeTrade) < 20):
         newPrice = client.get_price(coin, coinFrom)
         print(coin + " is at " + str(newPrice) + coinFrom)
         time.sleep(0.5)

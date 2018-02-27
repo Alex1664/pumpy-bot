@@ -28,17 +28,29 @@ class Cryptopia(object):
         return coinPrice['AskPrice']
 
     def buy_market(self, coin, coinfrom, price, quantity, testmode):
-        print("[Cryptopia] Buy market " + str(quantity) + " " + coin + " from " + coinfrom + " with " + str(testmode) + " test mode")
-        trade, error = self.api.submit_trade(coin + '/' + coinfrom, 'Buy', price, quantity)
-        print ("Buy market " + str(quantity) + " " + coin + " from " + coinfrom + " error - " + error)
-        if error is not None:
-            return -1
-        print trade
+        print("[Cryptopia] Buy market " + str(quantity) + " " + coin + " from " + coinfrom + " with " + str(
+            testmode) + " test mode")
+        print("Remove 2.1565% of the quantity to match fees")
+        if testmode:
+            print("Test mode : " + str(quantity * 0.978435) + " " + coin + " buy at : " + str(price))
+        else:
+            trade, error = self.api.submit_trade(coin + '/' + coinfrom, 'Buy', price, quantity * 0.978435)
+            if error is not None:
+                print ("Buy market " + str(quantity) + " " + coin + " from " + coinfrom + " error - " + error)
+            print trade
 
     def sell_market(self, coin, coinTo, price, quantity, testmode):
-        print("[Cryptopia] Sell market " + str(quantity) + " " + coin + " to " + coinTo + " with " + str(testmode) + " test mode")
+        print("[Cryptopia] Sell market " + str(quantity) + " " + coin + " to " + coinTo + " with " + str(
+            testmode) + " test mode")
         trade, error = self.api.submit_trade(coin + '/' + coinTo, 'Sell', price, quantity)
         print ("Sell market " + str(quantity) + " " + coin + " from " + coinTo + " error - " + error)
         if error is not None:
             return -1
+        print trade
+
+    def cancel_order(self):
+        print("[Cryptopia] Cancel ALL orders")
+        trade, error = self.api.cancel_trade("All", None, None)
+        if error is not None:
+            print ("Error cancel order : IT'S BAD !")
         print trade
