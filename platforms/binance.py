@@ -25,6 +25,7 @@ class Binance(object):
 
     def buy_market(self, coin, coinfrom, ignored, quantity, testmode):
         print("[Binance] Buy market " + str(quantity) + " " + coin + " from " + coinfrom + " with " + str(testmode) + " test mode")
+        self.symbol = coin + coinfrom
         if testmode:
             orderBuy = self.client.create_test_order(
                 symbol=coin + coinfrom,
@@ -47,10 +48,10 @@ class Binance(object):
         completed = False
         while not completed:
             time.sleep(0.2)
-            orderBuyId = orderBuy['clientOrderId']
+            self.orderID = orderBuy['clientOrderId']
             orderBuySt = self.client.get_order(
                 symbol=coin + coinfrom,
-                orderId=orderBuyId)
+                orderId=self.orderID)
             print("Order buy status : " + orderBuySt['status'] + " at : " + orderBuySt['price'])
 
             if not orderBuySt == self.client.ORDER_STATUS_NEW:
@@ -89,3 +90,9 @@ class Binance(object):
 
             if not orderSellSt == self.client.ORDER_STATUS_NEW:
                 completed = True
+
+    def cancel_order(self):
+        print("[Binance] Cancel order")
+        self.client.cancel_order(symbol=self.symbol, orderId=self.orderID)
+        self.symbol = None
+        self.orderID = None
