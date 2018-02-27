@@ -5,7 +5,6 @@ import getopt
 import os
 import sys
 import time
-
 import tweepy
 
 from platforms.binance import Binance
@@ -49,11 +48,17 @@ def handle_orders(coin, coinFrom):
     # Time before trade
     timeBeforeTrade = time.time()
 
+    print("Press 'S' to sell NOW !\n")
+    """tty.setraw(sys.stdin.fileno())"""
+
     # Wait 15 secondes
     while ((time.time() - timeBeforeTrade) < 20):
         newPrice = client.get_price(coin, coinFrom)
         print(coin + " is at " + str(newPrice) + coinFrom)
-        time.sleep(0.5)
+        """ch = sys.stdin.read(1)
+        if ch == 'S':
+             print "Wohoo" """
+        time.sleep(0.1)
 
     # Placement ordre vente
     quantityAfter = client.get_balance(coin)
