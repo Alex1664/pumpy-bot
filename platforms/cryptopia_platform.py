@@ -15,7 +15,7 @@ class Cryptopia(object):
         print("[Cryptopia] Get balance " + coin)
         balanceETH, error = self.api.get_balance(coin)
         if error is not None:
-            print ("Get balance error - " + error)
+            print("Get balance error - " + error)
             return -1
         return balanceETH['Available']
 
@@ -23,7 +23,7 @@ class Cryptopia(object):
         print("[Cryptopia] Get price of " + coin + " in " + coinfrom)
         coinPrice, error = self.api.get_market(coin + "_" + coin)
         if error is not None:
-            print ("Get price of " + coin + " error - " + error)
+            print("Get price of " + coin + " error - " + error)
             return -1
         return coinPrice['AskPrice']
 
@@ -35,8 +35,8 @@ class Cryptopia(object):
         else:
             trade, error = self.api.submit_trade(coin + '/' + coinfrom, 'Buy', price, quantity * 0.978435)
             if error is not None:
-                print ("Error - " + error)
-            print trade
+                print("Error - " + error)
+            print(trade)
 
     def sell_market(self, coin, coinTo, price, quantity, testmode):
         print("[Cryptopia] Sell market " + str(quantity) + " " + coin + " to " + coinTo + " with " + str(testmode) + " test mode")
@@ -45,12 +45,12 @@ class Cryptopia(object):
         else:
             trade, error = self.api.submit_trade(coin + '/' + coinTo, 'Sell', price, quantity)
             if error is not None:
-                print ("Error - " + error)
-            print trade
+                print("Error - " + error)
+            print(trade)
 
     def cancel_order(self):
         print("[Cryptopia] Cancel ALL orders")
         trade, error = self.api.cancel_trade("All", None, None)
         if error is not None:
-            print ("Error cancel order : IT'S BAD !")
-        print trade
+            print("Error cancel order : IT'S BAD !")
+        print(trade)

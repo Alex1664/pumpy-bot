@@ -142,7 +142,7 @@ def start_trading(coin):
 
 
 def wait_user():
-    coin = raw_input("Enter the coin to trade ...\n")
+    coin = input("Enter the coin to trade : \n")
     start_trading(coin)
 
 
