@@ -48,7 +48,6 @@ class Cryptopia(object):
             trade, error = self.api.submit_trade(coin + '/' + coinTo, 'Sell', price, quantity)
             if error is not None:
                 print ("Sell market " + str(quantity) + " " + coin + " from " + coinTo + " error - " + error)
-                return -1
             print trade
 
     def cancel_order(self):
