@@ -8,8 +8,8 @@ import time
 
 import tweepy
 
-from platforms.binance import Binance
-from platforms.cryptopia import Cryptopia
+from platforms.binance_platform import Binance
+from platforms.cryptopia_platform import Cryptopia
 
 """*******************"""
 """ Authentifications """
