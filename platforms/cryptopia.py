@@ -42,11 +42,14 @@ class Cryptopia(object):
     def sell_market(self, coin, coinTo, price, quantity, testmode):
         print("[Cryptopia] Sell market " + str(quantity) + " " + coin + " to " + coinTo + " with " + str(
             testmode) + " test mode")
-        trade, error = self.api.submit_trade(coin + '/' + coinTo, 'Sell', price, quantity)
-        print ("Sell market " + str(quantity) + " " + coin + " from " + coinTo + " error - " + error)
-        if error is not None:
-            return -1
-        print trade
+        if testmode:
+            print("Test mode : " + str(quantity * 0.978435) + " " + coin + " sell at : " + str(price))
+        else:
+            trade, error = self.api.submit_trade(coin + '/' + coinTo, 'Sell', price, quantity)
+            if error is not None:
+                print ("Sell market " + str(quantity) + " " + coin + " from " + coinTo + " error - " + error)
+                return -1
+            print trade
 
     def cancel_order(self):
         print("[Cryptopia] Cancel ALL orders")
