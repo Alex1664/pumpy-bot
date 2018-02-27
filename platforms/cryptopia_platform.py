@@ -28,26 +28,24 @@ class Cryptopia(object):
         return coinPrice['AskPrice']
 
     def buy_market(self, coin, coinfrom, price, quantity, testmode):
-        print("[Cryptopia] Buy market " + str(quantity) + " " + coin + " from " + coinfrom + " with " + str(
-            testmode) + " test mode")
+        print("[Cryptopia] Buy market " + str(quantity) + " " + coin + " from " + coinfrom + " with " + str(testmode) + " test mode")
         print("Remove 2.1565% of the quantity to match fees")
         if testmode:
             print("Test mode : " + str(quantity * 0.978435) + " " + coin + " buy at : " + str(price))
         else:
             trade, error = self.api.submit_trade(coin + '/' + coinfrom, 'Buy', price, quantity * 0.978435)
             if error is not None:
-                print ("Buy market " + str(quantity) + " " + coin + " from " + coinfrom + " error - " + error)
+                print ("Error - " + error)
             print trade
 
     def sell_market(self, coin, coinTo, price, quantity, testmode):
-        print("[Cryptopia] Sell market " + str(quantity) + " " + coin + " to " + coinTo + " with " + str(
-            testmode) + " test mode")
+        print("[Cryptopia] Sell market " + str(quantity) + " " + coin + " to " + coinTo + " with " + str(testmode) + " test mode")
         if testmode:
-            print("Test mode : " + str(quantity * 0.978435) + " " + coin + " sell at : " + str(price))
+            print("Test mode : " + quantity + " " + coin + " sell at : " + str(price) + " " + coinTo)
         else:
             trade, error = self.api.submit_trade(coin + '/' + coinTo, 'Sell', price, quantity)
             if error is not None:
-                print ("Sell market " + str(quantity) + " " + coin + " from " + coinTo + " error - " + error)
+                print ("Error - " + error)
             print trade
 
     def cancel_order(self):
