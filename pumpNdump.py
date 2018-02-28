@@ -5,6 +5,7 @@ import getopt
 import os
 import sys
 import time
+
 import tweepy
 
 from platforms.binance_platform import Binance
@@ -16,7 +17,7 @@ from platforms.cryptopia_platform import Cryptopia
 
 
 def authentication_tweeter():
-    print("Connection to tweeter ...")
+    print("-- Connecting to tweeter ...")
 
     auth = tweepy.OAuthHandler(os.environ['TWEETER_CONSUMER_KEY'], os.environ['TWEETER_CONSUMER_SECRET'])
     auth.set_access_token(os.environ['TWEETER_ACCESS_TOKEN'], os.environ['TWEETER_ACCESS_TOKEN_SECRET'])
@@ -72,7 +73,7 @@ def handle_orders(coin, coinFrom):
     print(str(originalAsset) + " " + coinFrom + " available")
     print("--> Sold")
     print("Previously had " + str(originalAsset) + " " + coinFrom + ", now have " + str(finalAsset) + " " + coinFrom)
-    print("Still have " + str(client.get_balance(coin)) + " " + coin)
+    print("Now have " + str(client.get_balance(coin)) + " " + coin)
     print("Delta is " + str(finalAsset - originalAsset) + " " + coinFrom)
 
 
@@ -98,8 +99,8 @@ def search_coin_of_the_week(tweet):
                 print("Coin of the week found : " + coinOfTheWeek)
 
     if (len(coinOfTheWeek) == 0):
-        print("Coin of the week not found :(")
-        print("Get tweet from Macafee ...")
+        print("[ERROR] Coin of the week not found :(")
+        print("Getting tweet from Macafee ...")
 
     return coinOfTheWeek
 
@@ -117,14 +118,14 @@ class TwitterStreamListener(tweepy.StreamListener):
     # Twitter error list : https://dev.twitter.com/overview/api/response-codes
     def on_error(self, status_code):
         if status_code == 403:
-            print("The request is understood, but it has been refused or access is not allowed. Limit is maybe reached")
+            print("[ERROR] The request is understood, but it has been refused or access is not allowed. Limit is maybe reached")
             return False
 
 
 def handle_tweet(tweet):
-    if tweet.author.id_str != alexTweeterId:
-        print("Tweet not from Macafee")
-        print("Get tweet from Macafee ...")
+    if tweet.author.id_str != os.environ['TWEETER_FOLLOW_ID']:
+        print("[WARNING] Tweet not from Macafee")
+        print("Getting tweet from Macafee ...")
         return False
 
     coin = search_coin_of_the_week(tweet.text)
@@ -149,7 +150,7 @@ def wait_user():
 def wait_tweet():
     clientTweeter = authentication_tweeter()
 
-    print("Get tweet from Macafee ...")
+    print("-- Getting tweet from Macafee ...")
 
     streamListener = TwitterStreamListener()
     myStream = tweepy.Stream(auth=clientTweeter.auth, listener=streamListener)
@@ -173,6 +174,8 @@ def main(argv):
         print('error')
         help()
         sys.exit(2)
+
+    platform = ''
     for opt, arg in opts:
         if opt == '-h':
             help()
@@ -191,7 +194,7 @@ def main(argv):
             global testMode
             testMode = True
 
-    print("Launching bot ...")
+    print("-- Launching bot ...")
 
     global client
     if platform == 'binance':
