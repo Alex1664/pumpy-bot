@@ -18,11 +18,11 @@ class Cryptopia(object):
 
         if balanceETH is None:
             print("[ERROR] Balance is None")
-            sys.exit(3)
+            return 0
 
         if error is not None:
             print("[ERROR] Balance error - " + error)
-            sys.exit(3)
+            return 0
 
         return balanceETH['Available']
 

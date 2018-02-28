@@ -139,12 +139,19 @@ def handle_tweet(tweet):
 
 
 def start_trading(coin):
-    coinFrom = 'ETH'
+    global coinFrom
     handle_orders(coin, coinFrom)
 
 
 def wait_user():
-    coin = input("Enter the coin to trade : \n")
+    if sys.version_info[0] == 3:
+        coin = input("Enter the coin to trade : \n")
+    elif sys.version_info[0] == 2:
+        coin = raw_input("Enter the coin to trade : \n")
+    else:
+        print("[ERROR] Unknown version")
+        sys.exit(2)
+
     start_trading(coin)
 
 
@@ -170,17 +177,20 @@ def help():
 def main(argv):
     mode = ''
     try:
-        opts, args = getopt.getopt(argv, "hm:tp:", ["platform=", "mode=", "test"])
+        opts, args = getopt.getopt(argv, "hm:tp:c:", ["coin=", "platform=", "mode=", "test"])
     except getopt.GetoptError:
         print('error')
         help()
         sys.exit(2)
 
     platform = ''
+    global coinFrom
     for opt, arg in opts:
         if opt == '-h':
             help()
             sys.exit()
+        elif opt in ("-c", "--coin"):
+            coinFrom = arg
         elif opt in ("-m", "--mode"):
             mode = arg
             if mode not in ('user', 'tweet'):
@@ -219,6 +229,7 @@ client = None
 coinSymbol = ''
 alexTweeterId = ''
 testMode = False
+coinFrom = 'ETH'
 
 if __name__ == "__main__":
     main(sys.argv[1:])
