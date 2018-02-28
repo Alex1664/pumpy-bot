@@ -40,6 +40,7 @@ def handle_orders(coin, coinFrom):
     # Calcul de la quantité à acheter
     priceBuy = float(originalPrice * 1.02)
     quantity = float(originalAsset / priceBuy)
+    quantity = round(quantity, 8)
     print("Will buy " + str(quantity) + " " + coin + " (price + 2%)")
 
     # Placement ordre achat
