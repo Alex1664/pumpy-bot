@@ -34,7 +34,7 @@ def handle_orders(coin, coinFrom):
 
     # Récupération du prix de départ
     originalPrice = client.get_price(coin, coinFrom)
-    print(coin + " is at " + str(originalPrice) + " " + coinFrom)
+    print(coin + " is at " + "{:10.8f}".format(originalPrice) + " " + coinFrom)
     print("Can buy " + str(float(originalAsset / originalPrice)) + " " + coin)
 
     # Calcul de la quantité à acheter
