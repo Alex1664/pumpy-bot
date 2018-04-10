@@ -40,27 +40,28 @@ def handle_orders(coin, coinFrom):
     # Calcul de la quantité à acheter
     priceBuy = float(originalPrice * 1.02)
     quantity = float(originalAsset / priceBuy)
-    quantity = round(quantity, 8)
+    quantity = round(quantity * 0.90, 8)
     print("Will buy " + str(quantity) + " " + coin + " (price + 2%)")
 
-    # Placement ordre achat
+    # Placement ordre achat (priceBuy ignored si market order sur binance)
     client.buy_market(coin, coinFrom, priceBuy, quantity, testMode)
     print("--> Bought")
 
     # Time before trade
     timeBeforeTrade = time.time()
 
-    print("Press 'S' to sell NOW !\n")
-    """tty.setraw(sys.stdin.fileno())"""
-
     # Wait 15 secondes
-    while ((time.time() - timeBeforeTrade) < 20):
+    """while ((time.time() - timeBeforeTrade) < 20):
         newPrice = client.get_price(coin, coinFrom)
         print(coin + " is at " + str(newPrice) + coinFrom)
-        """ch = sys.stdin.read(1)
-        if ch == 'S':
-             print "Wohoo" """
-        time.sleep(0.1)
+        time.sleep(0.1)"""
+
+    sellOrNot = ""
+    while (sellOrNot != "S"):
+        sellOrNot = input("Press 's' or 'S' to sell NOW : \n")
+        sellOrNot = sellOrNot.upper()
+
+    print("Ok I'm selling right now !")
 
     # Placement ordre vente
     quantityAfter = client.get_balance(coin)
@@ -147,7 +148,7 @@ def wait_user():
     if sys.version_info[0] == 3:
         coin = input("Enter the coin to trade : \n")
     elif sys.version_info[0] == 2:
-        coin = raw_input("Enter the coin to trade : \n")
+        coin = input("Enter the coin to trade : \n")
     else:
         print("[ERROR] Unknown version")
         sys.exit(2)
