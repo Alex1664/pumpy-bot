@@ -6,6 +6,8 @@ import os
 import sys
 import time
 
+import pygame
+import pygame.locals
 import tweepy
 
 from platforms.binance_platform import Binance
@@ -41,7 +43,7 @@ def handle_orders(coin, coinFrom):
     priceBuy = float(originalPrice * 1.02)
     quantity = float(originalAsset / priceBuy)
     quantity = round(quantity * 0.90, 8)
-    print("Will buy " + str(quantity) + " " + coin + " (price + 2%)")
+    print("Will buy " + str(quantity) + " " + coin + " (quantity -10% at price + 2%)")
 
     # Placement ordre achat (priceBuy ignored si market order sur binance)
     client.buy_market(coin, coinFrom, priceBuy, quantity, testMode)
@@ -61,7 +63,7 @@ def handle_orders(coin, coinFrom):
         sellOrNot = input("Press 's' or 'S' to sell NOW : \n")
         sellOrNot = sellOrNot.upper()
 
-    print("Ok I'm selling right now !")
+    print("Selling ...")
 
     # Placement ordre vente
     quantityAfter = client.get_balance(coin)
@@ -167,7 +169,7 @@ def wait_tweet():
 
 
 def help():
-    print('pumpNdump.py -m <user|tweet> -p <cryptopia|binance> [--test]')
+    print('pumpNdump.py -m <user|tweet> -p <cryptopia|binance> -c <ETH|BTC|...> [--test]')
 
 
 """******"""

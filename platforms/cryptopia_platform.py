@@ -27,7 +27,6 @@ class Cryptopia(object):
         return balanceETH['Available']
 
     def get_price(self, coin, coinfrom):
-        print("-- Getting price of " + coin + " in " + coinfrom)
         coinPrice, error = self.api.get_market(coin + "_" + coinfrom)
 
         if coinPrice is None:

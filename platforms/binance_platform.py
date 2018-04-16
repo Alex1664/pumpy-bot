@@ -19,7 +19,6 @@ class Binance(object):
         return float(assetJSON['free'])
 
     def get_price(self, coin, coinfrom):
-        print("-- Getting price of " + coin + " in " + coinfrom)
         priceJSON = self.client.get_symbol_ticker(symbol=coin + coinfrom)
         return float(priceJSON['price'])
 
