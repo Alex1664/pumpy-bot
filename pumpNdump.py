@@ -6,10 +6,8 @@ import os
 import sys
 import time
 
-import pygame
-import pygame.locals
 import tweepy
-
+import subprocess
 from platforms.binance_platform import Binance
 from platforms.cryptopia_platform import Cryptopia
 
@@ -143,18 +141,13 @@ def handle_tweet(tweet):
 
 def start_trading(coin):
     global coinFrom
+    global platform
+    subprocess.call(['python3 printPrices.py', '--coin', coin, '--coin-from', coinFrom, '--platform', platform])
     handle_orders(coin, coinFrom)
 
 
 def wait_user():
-    if sys.version_info[0] == 3:
-        coin = input("Enter the coin to trade : \n")
-    elif sys.version_info[0] == 2:
-        coin = input("Enter the coin to trade : \n")
-    else:
-        print("[ERROR] Unknown version")
-        sys.exit(2)
-
+    coin = input("Enter the coin to trade : \n")
     start_trading(coin)
 
 
@@ -186,7 +179,7 @@ def main(argv):
         help()
         sys.exit(2)
 
-    platform = ''
+    global platform
     global coinFrom
     for opt, arg in opts:
         if opt == '-h':
@@ -233,6 +226,7 @@ coinSymbol = ''
 alexTweeterId = ''
 testMode = False
 coinFrom = 'ETH'
+platform = ''
 
 if __name__ == "__main__":
     main(sys.argv[1:])
