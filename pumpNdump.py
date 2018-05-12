@@ -40,7 +40,7 @@ def handle_orders(coin, coinFrom):
     # Calcul de la quantité à acheter
     priceBuy = float(originalPrice * 1.02)
     quantity = float(originalAsset / priceBuy)
-    quantity = round(quantity * 0.90, 8)
+    quantity = round(quantity * 0.90, 6)
     print("Will buy " + str(quantity) + " " + coin + " (quantity -10% at price + 2%)")
 
     # Placement ordre achat (priceBuy ignored si market order sur binance)
@@ -51,15 +51,17 @@ def handle_orders(coin, coinFrom):
     timeBeforeTrade = time.time()
 
     # Wait 15 secondes
-    """while ((time.time() - timeBeforeTrade) < 20):
+    while ((time.time() - timeBeforeTrade) < 20):
         newPrice = client.get_price(coin, coinFrom)
         print(coin + " is at " + str(newPrice) + coinFrom)
-        time.sleep(0.1)"""
+        time.sleep(0.1)
 
+    """
     sellOrNot = ""
     while (sellOrNot != "S"):
         sellOrNot = input("Press 's' or 'S' to sell NOW : \n")
         sellOrNot = sellOrNot.upper()
+        """
 
     print("Selling ...")
 
@@ -142,7 +144,7 @@ def handle_tweet(tweet):
 def start_trading(coin):
     global coinFrom
     global platform
-    subprocess.call(['python3 printPrices.py', '--coin', coin, '--coin-from', coinFrom, '--platform', platform])
+    # subprocess.call(['python3', '/home/erwanlbp/dev/python/Alex1664/pumpy-bot/printPrices.py', '--coin', coin, '--coin-from', coinFrom, '--platform', platform])
     handle_orders(coin, coinFrom)
 
 
