@@ -7,7 +7,7 @@ import sys
 import time
 
 import tweepy
-import subprocess
+
 from platforms.binance_platform import Binance
 from platforms.cryptopia_platform import Cryptopia
 
@@ -24,9 +24,26 @@ def authentication_tweeter():
     return tweepy.API(auth)
 
 
+def number_of_decimals(stepSize):
+    splitted = str(stepSize).split('1')[0].split('.')
+    if len(splitted) == 1:
+        return 0
+    return len(splitted[1]) + 1
+
+
+def roundAt(toRound, at):
+    return ("{:10." + str(at) + "f}").format(toRound)
+
+
 def handle_orders(coin, coinFrom):
+    global buyFor
     coin = coin.upper()
     coinFrom = coinFrom.upper()
+
+    # Initial time
+    initTime = time.time()
+    if testMode:
+        print("[Time start]")
 
     # Récupération des fonds disponibles
     originalAsset = client.get_balance(coinFrom)
@@ -34,21 +51,34 @@ def handle_orders(coin, coinFrom):
 
     # Récupération du prix de départ
     originalPrice = client.get_price(coin, coinFrom)
-    print(coin + " is at " + "{:10.8f}".format(originalPrice) + " " + coinFrom)
-    print("Can buy " + str(float(originalAsset / originalPrice)) + " " + coin)
+    minQty, stepSize = client.get_lot_size(coin, coinFrom)
+
+    print(coin + " is at " + roundAt(originalPrice, 8) + " " + coinFrom)
+
+    nbDecimal = number_of_decimals(stepSize)
 
     # Calcul de la quantité à acheter
     priceBuy = float(originalPrice * 1.02)
     quantity = float(originalAsset / priceBuy)
-    quantity = round(quantity * 0.90, 8)
-    print("Will buy " + str(quantity) + " " + coin + " (quantity -10% at price + 2%)")
+    quantity = round(quantity * buyFor, nbDecimal)
+    if quantity < minQty:
+        print("Cant't buy " + roundAt(quantity, 8) + " " + coin + " cause it's below the minimum quantity : " + roundAt(minQty, 8) + " " + coin + " in " + coinFrom)
+
+    print("Will buy " + roundAt(quantity, 8) + " " + coin + " (" + str(buyFor) + " x quantity at price + 2%)")
+
+    # Time before buy
+    timeBeforeBuy = time.time()
+    if testMode:
+        print("[Took " + roundAt(timeBeforeBuy - initTime, 2) + " seconds]")
 
     # Placement ordre achat (priceBuy ignored si market order sur binance)
     client.buy_market(coin, coinFrom, priceBuy, quantity, testMode)
     print("--> Bought")
 
     # Time before trade
-    timeBeforeTrade = time.time()
+    timeBeforeWait = time.time()
+    if testMode:
+        print("[Took " + roundAt(timeBeforeWait - timeBeforeBuy, 2) + " seconds]")
 
     # Wait 15 secondes
     """while ((time.time() - timeBeforeTrade) < 20):
@@ -61,22 +91,36 @@ def handle_orders(coin, coinFrom):
         sellOrNot = input("Press 's' or 'S' to sell NOW : \n")
         sellOrNot = sellOrNot.upper()
 
+    # Time before sell
+    timeBeforeSell = time.time()
+    if testMode:
+        print("[Took " + roundAt(timeBeforeSell - timeBeforeWait, 2) + " seconds]")
+
     print("Selling ...")
 
     # Placement ordre vente
     quantityAfter = client.get_balance(coin)
-    print(str(quantityAfter) + " " + coin + " available")
+    print(roundAt(quantityAfter, 8) + " " + coin + " available")
     priceSell = float(client.get_price(coin, coinFrom) * 0.98)
-    print("Will sell " + str(quantityAfter) + " " + coin + " (price - 2%)")
+    quantityAfter = round(quantityAfter, nbDecimal)
+    print("Will sell " + roundAt(quantityAfter, 8) + " " + coin + " (price - 2%)")
     client.sell_market(coin, coinFrom, priceSell, quantityAfter, testMode)
+
+    # Time before status
+    timeBeforeStatus = time.time()
+    if testMode:
+        print("[Took " + roundAt(timeBeforeStatus - timeBeforeSell, 2) + " seconds]")
 
     # Status order sell
     finalAsset = client.get_balance(coinFrom)
-    print(str(originalAsset) + " " + coinFrom + " available")
+    print(roundAt(originalAsset, 8) + " " + coinFrom + " available")
     print("--> Sold")
-    print("Previously had " + str(originalAsset) + " " + coinFrom + ", now have " + str(finalAsset) + " " + coinFrom)
-    print("Now have " + str(client.get_balance(coin)) + " " + coin)
-    print("Delta is " + str(finalAsset - originalAsset) + " " + coinFrom)
+    print("Previously had " + roundAt(originalAsset, 8) + " " + coinFrom + ", now have " + roundAt(finalAsset, 8) + " " + coinFrom)
+    print("Now have " + roundAt(client.get_balance(coin), 8) + " " + coin)
+    print("Delta is " + roundAt(finalAsset - originalAsset, 8) + " " + coinFrom)
+
+    if testMode:
+        print("[Took in total " + roundAt(time.time() - initTime, 2) + " seconds]")
 
 
 """*********"""
@@ -142,7 +186,7 @@ def handle_tweet(tweet):
 def start_trading(coin):
     global coinFrom
     global platform
-    subprocess.call(['python3 printPrices.py', '--coin', coin, '--coin-from', coinFrom, '--platform', platform])
+    # subprocess.call(['python3 printPrices.py', '--coin', coin, '--coin-from', coinFrom, '--platform', platform])
     handle_orders(coin, coinFrom)
 
 
@@ -162,7 +206,7 @@ def wait_tweet():
 
 
 def help():
-    print('pumpNdump.py -m <user|tweet> -p <cryptopia|binance> -c <ETH|BTC|...> [--test]')
+    print('pumpNdump.py -m <user|tweet> -p <cryptopia|binance> -c <ETH|BTC|...> [--buy-for 0.9] [--test]')
 
 
 """******"""
@@ -173,7 +217,7 @@ def help():
 def main(argv):
     mode = ''
     try:
-        opts, args = getopt.getopt(argv, "hm:tp:c:", ["coin=", "platform=", "mode=", "test"])
+        opts, args = getopt.getopt(argv, "hm:tp:c:b:", ["coin=", "platform=", "mode=", "test", "buy-for="])
     except getopt.GetoptError:
         print('error')
         help()
@@ -181,12 +225,15 @@ def main(argv):
 
     global platform
     global coinFrom
+    global buyFor
     for opt, arg in opts:
         if opt == '-h':
             help()
             sys.exit()
         elif opt in ("-c", "--coin"):
             coinFrom = arg
+        elif opt in ("-b", "--buy-for"):
+            buyFor = arg
         elif opt in ("-m", "--mode"):
             mode = arg
             if mode not in ('user', 'tweet'):
@@ -220,6 +267,11 @@ def main(argv):
         help()
         sys.exit()
 
+    if buyFor <= 0 or buyFor > 1:
+        print("Can't buy for more thant what you have (or less than 0)")
+        help()
+        sys.exit()
+
 
 client = None
 coinSymbol = ''
@@ -227,6 +279,7 @@ alexTweeterId = ''
 testMode = False
 coinFrom = 'ETH'
 platform = ''
+buyFor = 0.9
 
 if __name__ == "__main__":
     main(sys.argv[1:])

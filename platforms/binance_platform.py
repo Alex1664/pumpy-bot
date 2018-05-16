@@ -80,3 +80,14 @@ class Binance(object):
         self.client.cancel_order(symbol=self.symbol, orderId=self.orderID)
         self.symbol = None
         self.orderID = None
+
+    def get_lot_size(self, coin, coinFrom):
+        print("-- Getting lot size for " + coin + " in " + coinFrom)
+        allInfos = self.client.get_exchange_info()
+        for symbol in allInfos['symbols']:
+            if symbol['baseAsset'] != coin or symbol['quoteAsset'] != coinFrom:
+                continue
+            for filter in symbol['filters']:
+                if filter['filterType'] != 'LOT_SIZE':
+                    continue
+                return float(filter['minQty']), float(filter['stepSize'])

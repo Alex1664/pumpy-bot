@@ -87,3 +87,8 @@ class Cryptopia(object):
             sys.exit(3)
 
         print(trade)
+
+    def get_lot_size(self, coin, coinFrom):
+        print("-- Getting lot size for " + coin + " in " + coinFrom)
+        print(">>>NOT IMPLEMENTED YET<<<")
+        return 4000
