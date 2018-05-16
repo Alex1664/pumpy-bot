@@ -27,7 +27,7 @@ def print_prices(coin, coinFrom):
 
 def help():
     print(
-        'printPrices.py -p <cryptopia|binance> -c <MOD|QSP|...> -f <ETH|BTC|...>')  # TODO add other args to do some stats like price start, etc
+        'python3 printPrices.py -p <cryptopia|binance> -c <MOD|QSP|...> -f <ETH|BTC|...>')  # TODO add other args to do some stats like price start, etc
 
 
 def main(argv):

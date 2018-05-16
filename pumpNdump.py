@@ -81,15 +81,17 @@ def handle_orders(coin, coinFrom):
         print("[Took " + roundAt(timeBeforeWait - timeBeforeBuy, 2) + " seconds]")
 
     # Wait 15 secondes
-    """while ((time.time() - timeBeforeTrade) < 20):
+    while ((time.time() - timeBeforeWait) < 20):
         newPrice = client.get_price(coin, coinFrom)
-        print(coin + " is at " + str(newPrice) + coinFrom)
-        time.sleep(0.1)"""
+        print(coin + " is at " + roundAt(newPrice, 8) + coinFrom)
+        time.sleep(0.1)
 
+    """
     sellOrNot = ""
     while (sellOrNot != "S"):
         sellOrNot = input("Press 's' or 'S' to sell NOW : \n")
         sellOrNot = sellOrNot.upper()
+        """
 
     # Time before sell
     timeBeforeSell = time.time()
@@ -186,7 +188,7 @@ def handle_tweet(tweet):
 def start_trading(coin):
     global coinFrom
     global platform
-    # subprocess.call(['python3 printPrices.py', '--coin', coin, '--coin-from', coinFrom, '--platform', platform])
+    # subprocess.call(['python3', '/home/erwanlbp/dev/python/Alex1664/pumpy-bot/printPrices.py', '--coin', coin, '--coin-from', coinFrom, '--platform', platform])
     handle_orders(coin, coinFrom)
 
 
