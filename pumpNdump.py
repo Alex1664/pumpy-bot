@@ -60,9 +60,10 @@ def handle_orders(coin, coinFrom):
     # Calcul de la quantité à acheter
     priceBuy = float(originalPrice * 1.02)
     quantity = float(originalAsset / priceBuy)
-    quantity = round(quantity * buyFor, nbDecimal)
+    quantity = round(quantity * float(buyFor), nbDecimal)
     if quantity < minQty:
         print("Cant't buy " + roundAt(quantity, 8) + " " + coin + " cause it's below the minimum quantity : " + roundAt(minQty, 8) + " " + coin + " in " + coinFrom)
+        return
 
     print("Will buy " + roundAt(quantity, 8) + " " + coin + " (" + str(buyFor) + " x quantity at price + 2%)")
 
@@ -104,9 +105,12 @@ def handle_orders(coin, coinFrom):
     quantityAfter = client.get_balance(coin)
     print(roundAt(quantityAfter, 8) + " " + coin + " available")
     priceSell = float(client.get_price(coin, coinFrom) * 0.98)
-    quantityAfter = round(quantityAfter, nbDecimal)
-    print("Will sell " + roundAt(quantityAfter, 8) + " " + coin + " (price - 2%)")
-    client.sell_market(coin, coinFrom, priceSell, quantityAfter, testMode)
+    quantityAfterRound = float(("{0:." + str(nbDecimal) + "f}").format(quantityAfter))
+    if quantityAfterRound > quantityAfter and nbDecimal == 0:
+        print('Reduce quantity to sell cause ')
+        quantityAfterRound = quantityAfterRound - 1
+    print("Will sell " + str(quantityAfter) + " " + coin + " (price - 2%)")
+    client.sell_market(coin, coinFrom, priceSell, quantityAfterRound, testMode)
 
     # Time before status
     timeBeforeStatus = time.time()
@@ -123,6 +127,11 @@ def handle_orders(coin, coinFrom):
 
     if testMode:
         print("[Took in total " + roundAt(time.time() - initTime, 2) + " seconds]")
+
+    # Wait so everything finish (Not sure)
+    timeBeforeWait = time.time()
+    while ((time.time() - timeBeforeWait) < 10):
+        time.sleep(1)
 
 
 """*********"""
@@ -269,7 +278,7 @@ def main(argv):
         help()
         sys.exit()
 
-    if buyFor <= 0 or buyFor > 1:
+    if float(buyFor) <= 0 or float(buyFor) >= 1:
         print("Can't buy for more thant what you have (or less than 0)")
         help()
         sys.exit()

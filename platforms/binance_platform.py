@@ -16,6 +16,9 @@ class Binance(object):
     def get_balance(self, coin):
         print("-- Getting balance for " + coin)
         assetJSON = self.client.get_asset_balance(coin)
+        if assetJSON == None:
+            print(">>> PROBLEM get_balance returned null <<<")
+            return 0
         return float(assetJSON['free'])
 
     def get_price(self, coin, coinfrom):
@@ -36,11 +39,14 @@ class Binance(object):
                 quantity=quantity,
                 # price=repr(originalPrice)
             )
-
+        """
+            # Il a cette tete le clientOrderId 8Qun2GgcNnYrHKeK8Iv1gI
+            # Alors que le get_order attend un nombre
             completed = False
             while not completed:
                 time.sleep(0.2)
-                self.orderID = orderBuy['clientOrderId']
+                
+                print(self.orderID)
                 orderBuySt = self.client.get_order(
                     symbol=coin + coinfrom,
                     orderId=self.orderID)
@@ -48,13 +54,14 @@ class Binance(object):
 
                 if not orderBuySt == self.client.ORDER_STATUS_NEW:
                     completed = True
+        """
 
     def sell_market(self, coin, coinTo, ignored, quantity, testmode):
         print("-- Selling market " + str(quantity) + " " + coin + " to " + coinTo)
         if testmode:
             print("[TEST] " + str(quantity) + " " + coin + " sell at : " + str(ignored) + " " + coinTo + " (price is ignored on Binance)")
         else:
-            orderSell = self.client.create_test_order(
+            orderSell = self.client.create_order(
                 symbol=coin + coinTo,
                 side=self.client.SIDE_SELL,
                 type=self.client.ORDER_TYPE_MARKET,
@@ -62,7 +69,8 @@ class Binance(object):
                 quantity=quantity,
                 # price=repr(newPrice)
             )
-
+        """
+        # Pareil que pour le buy
             completed = False
             while not completed:
                 time.sleep(0.2)
@@ -74,6 +82,8 @@ class Binance(object):
 
                 if not orderSellSt == self.client.ORDER_STATUS_NEW:
                     completed = True
+        """
+
 
     def cancel_order(self):
         print("-- Canceling order")
